@@ -1,0 +1,112 @@
+// Prisma-схема проекта 3Dpoint / 3Дточка.
+// СУБД: SQLite на старте (см. архитектурное решение — простой сайт с одним
+// админом, без необходимости в отдельном сервере БД). При росте нагрузки
+// достаточно сменить provider/url без изменения остальной архитектуры.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadCategory {
+  PRIVATE
+  BUSINESS
+  SERIAL
+}
+
+enum ContactMethod {
+  telegram
+  phone
+  email
+  other
+}
+
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  ARCHIVED
+}
+
+/// Заявка с сайта. Форма — не заказ и не полноценное ТЗ, поэтому большинство
+/// полей необязательны, кроме имени, контакта и краткого описания задачи.
+model Lead {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  category      LeadCategory
+  name          String
+  contactMethod ContactMethod
+  contactValue  String
+  company       String?
+  description   String
+  batchSize     String?
+  sourcePage    String?
+  status        LeadStatus    @default(NEW)
+  spamFlag      Boolean       @default(false)
+  files         LeadFile[]
+}
+
+/// Файл, приложенный к заявке (фото, чертёж, модель и т.п.).
+model LeadFile {
+  id           String   @id @default(cuid())
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  originalName String
+  storedPath   String
+  mimeType     String
+  sizeBytes    Int
+  createdAt    DateTime @default(now())
+}
+
+enum PortfolioCategory {
+  RESTORATION
+  MANUFACTURING
+  BUSINESS
+  SERIAL
+}
+
+/// Кейс портфолио, управляемый через админку.
+model PortfolioCase {
+  id          String            @id @default(cuid())
+  title       String
+  category    PortfolioCategory
+  problemText String
+  solutionText String
+  resultText  String
+  sortOrder   Int               @default(0)
+  isPublished Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  images      PortfolioImage[]
+}
+
+model PortfolioImage {
+  id        String        @id @default(cuid())
+  caseId    String
+  case      PortfolioCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  filePath  String
+  sortOrder Int           @default(0)
+}
+
+/// Простое key-value хранилище контактных данных и настроек сайта, чтобы
+/// администратор мог менять их без изменения кода.
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Единственная административная учётная запись (см. архитектуру админки —
+/// без полноценной ролевой модели, она пока не нужна).
+model AdminUser {
+  id           String    @id @default(cuid())
+  login        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+}

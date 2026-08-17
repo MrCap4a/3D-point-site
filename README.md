@@ -1,36 +1,231 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 3Dpoint / 3Дточка — сайт
 
-## Getting Started
+Сайт компании, изготавливающей и восстанавливающей пластиковые детали по
+технологии FDM 3D-печати. Многостраничный сайт (главная, три коммерческие
+страницы, портфолио) с формами заявок, сохранением в базу данных и
+административной панелью.
 
-First, run the development server:
+## Стек технологий
+
+- **Next.js 16 (App Router)** + TypeScript
+- **Tailwind CSS v4**
+- **Prisma 6 + SQLite** — база данных
+- **Zod** — серверная валидация форм
+- **bcryptjs** — хэширование пароля администратора
+
+## Требования к окружению
+
+- Node.js 20 или новее
+- npm
+
+## Установка
+
+```bash
+npm install
+```
+
+## Настройка переменных окружения
+
+1. Скопируйте `.env.example` в `.env`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   (в Windows PowerShell: `Copy-Item .env.example .env`)
+
+2. Заполните значения:
+
+   | Переменная | Назначение |
+   |---|---|
+   | `NEXT_PUBLIC_SITE_URL` | Публичный адрес сайта (используется в SEO, sitemap, robots, Open Graph) |
+   | `DATABASE_URL` | Строка подключения к БД. Для SQLite по умолчанию: `file:./dev.db` |
+   | `ADMIN_SESSION_SECRET` | Длинная случайная строка для подписи сессии администратора |
+   | `ADMIN_LOGIN` | Логин для входа в `/admin` |
+   | `ADMIN_PASSWORD_HASH` | bcrypt-хэш пароля администратора (см. ниже, как сгенерировать) |
+   | `UPLOADS_DIR` | Каталог для загруженных файлов заявок и изображений портфолио (по умолчанию `./uploads`) |
+   | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Зарезервировано под будущую интеграцию с Telegram, пока не используется |
+
+3. Сгенерируйте хэш пароля администратора:
+
+   ```bash
+   node -e "console.log(require('bcryptjs').hashSync('ваш-пароль', 10))"
+   ```
+
+   Полученную строку (начинается с `$2b$...`) вставьте в `ADMIN_PASSWORD_HASH`.
+
+   > **Важно:** Next.js поддерживает подстановку переменных в `.env`-файлах
+   > через символ `$`. Так как bcrypt-хэш сам содержит символы `$`
+   > (например, `$2b$10$...`), каждый из них нужно экранировать обратным
+   > слэшем, иначе часть хэша будет обрезана и вход в админку не сработает:
+   >
+   > ```env
+   > # неправильно — хэш будет обрезан:
+   > ADMIN_PASSWORD_HASH="$2b$10$6/kXk2o0..."
+   >
+   > # правильно:
+   > ADMIN_PASSWORD_HASH="\$2b\$10\$6/kXk2o0..."
+   > ```
+
+   Сгенерировать секрет сессии можно, например, так:
+
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+## Настройка базы данных
+
+Применить миграции и создать локальную SQLite-базу:
+
+```bash
+npx prisma migrate dev
+```
+
+Эта команда создаст файл `prisma/dev.db` и сгенерирует Prisma Client.
+Если Prisma Client нужно перегенерировать отдельно (например, после смены
+схемы без новой миграции):
+
+```bash
+npx prisma generate
+```
+
+Посмотреть содержимое базы в браузере (удобно на этапе разработки):
+
+```bash
+npx prisma studio
+```
+
+## Запуск в режиме разработки
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Сайт будет доступен на [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Сборка и запуск в production-режиме
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## Проверка кода
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Вход в админку
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Админка находится по адресу `/admin` (например,
+`http://localhost:3000/admin`). При первом заходе без активной сессии
+произойдёт редирект на `/admin/login` — используйте логин и пароль,
+заданные в `.env` (`ADMIN_LOGIN` и пароль, из которого сгенерирован
+`ADMIN_PASSWORD_HASH`).
 
-## Deploy on Vercel
+В админке доступны разделы:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Обзор** — количество новых заявок и кейсов портфолио;
+- **Заявки** — список всех заявок с сайта, просмотр деталей, смена статуса;
+- **Портфолио** — создание/редактирование/удаление кейсов, загрузка
+  изображений, публикация/скрытие, изменение порядка отображения;
+- **Настройки** — контактные данные сайта (телефон, Telegram, email).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Структура проекта (кратко)
+
+```
+src/
+  app/
+    (site)/     — публичные страницы (главная, /private, /business, /serial, /portfolio)
+    admin/       — административная панель (защищена авторизацией)
+    api/         — серверные обработчики: заявки, публичный API портфолио, API админки
+    layout.tsx   — корневой layout (шрифты, метаданные, JSON-LD)
+    robots.ts    — генерация robots.txt
+    sitemap.ts   — генерация sitemap.xml
+  components/
+    ui/          — базовые компоненты (кнопки, контейнер и т.д.)
+    layout/      — шапка, футер, мобильная CTA-панель
+    home/        — секции главной страницы
+    page/        — переиспользуемые секции коммерческих страниц
+    forms/       — общая логика форм заявок
+    portfolio/   — карточка кейса, модальное окно, сетка
+    admin/       — компоненты админки
+  lib/           — доступ к БД (Prisma), валидация (Zod), авторизация, работа с файлами
+prisma/
+  schema.prisma  — схема базы данных
+  migrations/    — история миграций
+uploads/         — загруженные файлы заявок и изображения портфолио (не хранится в git)
+```
+
+## Важные технические заметки
+
+- **Файлы заявок и изображения портфолио** хранятся вне каталога `public`,
+  в `UPLOADS_DIR` (по умолчанию `./uploads`). Изображения портфолио
+  раздаются публично только для опубликованных кейсов через
+  `/api/portfolio/images/:id`; файлы, приложенные к заявкам, не имеют
+  публичного доступа — их можно посмотреть только из админки.
+- **Секреты** (`ADMIN_SESSION_SECRET`, `ADMIN_PASSWORD_HASH`,
+  `DATABASE_URL` и т.д.) находятся только в `.env`, который не должен
+  попадать в систему контроля версий — файл уже добавлен в `.gitignore`.
+  В репозитории хранится только `.env.example` без реальных значений.
+- **База данных** — SQLite, что подходит для развёртывания на обычном
+  сервере/VPS с постоянным диском (не подходит "как есть" для
+  serverless-хостингов вроде Vercel, где файловая система временная). При
+  необходимости перейти на управляемый Postgres — нужно изменить
+  `datasource` в `prisma/schema.prisma` и `DATABASE_URL`, остальной код
+  менять не нужно, так как везде используется Prisma Client.
+- **Telegram-интеграция** для пересылки заявок пока не реализована —
+  заявки сохраняются только в базу данных. Переменные `TELEGRAM_BOT_TOKEN`
+  и `TELEGRAM_CHAT_ID` зарезервированы под неё.
+
+## Деплой
+
+Проект запускается как обычное Node.js-приложение:
+
+```bash
+npm run build
+npm run start
+```
+
+Перед первым запуском на новом сервере:
+
+1. Скопировать `.env` с реальными значениями (не из примера).
+2. Выполнить `npx prisma migrate deploy` (аналог `migrate dev`, но без
+   интерактивных запросов, для production).
+3. Убедиться, что каталог из `UPLOADS_DIR` доступен для записи процессу
+   Node.js и не удаляется при передеплое (подробности ниже).
+
+### Почему важно позаботиться о `UPLOADS_DIR` отдельно
+
+Файлы заявок и изображения портфолио — это обычные файлы на диске сервера
+(см. `src/lib/uploads.ts` и `src/lib/portfolio-uploads.ts`), а не записи в
+базе данных. В базе хранится только путь к файлу, а не сам файл. Это
+означает:
+
+- **Каталог должен существовать и быть доступен на запись** тому
+  пользователю/процессу, от имени которого запущен `next start` (или
+  process manager вроде PM2/systemd). Если процесс не сможет создать файл
+  в `UPLOADS_DIR`, загрузка файлов в форме заявки и изображений в
+  портфолио будет завершаться ошибкой.
+- **Каталог должен переживать передеплой.** Многие способы деплоя (пересборка
+  Docker-образа, `git pull` + `npm run build`, CI/CD-пайплайны) по умолчанию
+  разворачивают код в новую директорию или новый контейнер, не сохраняя
+  файлы, созданные предыдущей версией приложения. Если `UPLOADS_DIR`
+  указывает на каталог внутри рабочей директории проекта и эта директория
+  полностью пересоздаётся при каждом деплое, все ранее загруженные файлы
+  заявок и фотографии кейсов портфолио будут безвозвратно потеряны, хотя
+  записи о них останутся в базе данных (и будут ссылаться на
+  несуществующие файлы).
+- **На serverless/эфемерных платформах это особенно критично.** Такие
+  платформы могут вообще не сохранять файловую систему между запросами —
+  в этом случае `UPLOADS_DIR` нужно указывать на постоянный внешний том
+  (persistent volume/диск, подключённый к серверу) или на внешнее файловое
+  хранилище, а не на локальную папку внутри контейнера.
+
+Практическая рекомендация: указывать в `UPLOADS_DIR` абсолютный путь вне
+директории с кодом приложения (например, `/var/www/3dpoint-uploads`, а не
+`./uploads` внутри папки проекта), чтобы деплой кода не затрагивал эту
+директорию, и включить её в регулярное резервное копирование вместе с
+файлом базы данных (`prisma/dev.db` или соответствующим файлом БД в
+production).
