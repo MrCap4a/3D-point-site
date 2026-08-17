@@ -33,6 +33,7 @@ export function Header() {
   }, [menuOpen]);
 
   return (
+    <>
     <header className="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]/90 backdrop-blur-sm">
       <Container>
         <div className="flex h-16 items-center justify-between sm:h-20">
@@ -76,32 +77,33 @@ export function Header() {
           </button>
         </div>
       </Container>
-
-      {menuOpen && (
-        <div
-          id="mobile-menu"
-          className="fixed inset-x-0 top-16 bottom-0 z-40 flex flex-col bg-[var(--color-bg-deep)] px-6 py-10 sm:top-20 lg:hidden"
-        >
-          <nav className="flex flex-col gap-6" aria-label="Мобильная навигация">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-2xl font-medium text-[var(--color-text-inverse)]"
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="mt-auto pt-10">
-            <Button href={cta.href} size="lg" className="w-full">
-              {cta.label}
-            </Button>
-          </div>
-        </div>
-      )}
     </header>
+
+    {menuOpen && (
+      <div
+        id="mobile-menu"
+        className="fixed inset-x-0 top-16 bottom-0 z-50 flex flex-col bg-[var(--color-bg-deep)] px-6 py-10 sm:top-20 lg:hidden"
+      >
+        <nav className="flex flex-col gap-6" aria-label="Мобильная навигация">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-2xl font-medium text-[var(--color-text-inverse)]"
+              onClick={() => setMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="mt-auto pt-10">
+          <Button href={cta.href} size="lg" className="w-full">
+            {cta.label}
+          </Button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

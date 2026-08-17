@@ -30,7 +30,7 @@ export function WhyUs() {
       <Container>
         <SectionHeading
           label="Почему обращаются к нам"
-          title="Небольшое, но серьёзное производство"
+          title="Ответственный подход к каждой задаче"
         />
 
         <div className="mt-14 grid gap-x-10 gap-y-10 sm:grid-cols-2">
