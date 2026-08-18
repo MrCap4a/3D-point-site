@@ -63,27 +63,19 @@ model LeadFile {
   createdAt    DateTime @default(now())
 }
 
-enum PortfolioCategory {
-  RESTORATION
-  MANUFACTURING
-  BUSINESS
-  SERIAL
-}
-
 /// Кейс портфолио, управляемый через админку. Оформление в духе объявлений
-/// (фото + описание + необязательная цена), а не технического отчёта.
+/// (фото + описание + необязательная цена), без категорий и техотчётов.
 model PortfolioCase {
-  id          String            @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
-  category    PortfolioCategory
   description String
   /// Цена — свободный текст (например "2500 ₽" или "от 1500 ₽"), не число:
   /// администратор сам решает, как её сформулировать. Необязательное поле.
   price       String?
-  sortOrder   Int               @default(0)
-  isPublished Boolean           @default(false)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  sortOrder   Int              @default(0)
+  isPublished Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   images      PortfolioImage[]
 }
 

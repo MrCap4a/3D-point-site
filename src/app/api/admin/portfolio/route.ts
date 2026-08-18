@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { portfolioCaseSchema } from "@/lib/validation/portfolio";
+import { savePortfolioImage } from "@/lib/portfolio-uploads";
 
 /** GET /api/admin/portfolio — все кейсы, включая скрытые, по порядку. */
 export async function GET() {
@@ -15,13 +16,23 @@ export async function GET() {
   return NextResponse.json({ ok: true, cases });
 }
 
-/** POST /api/admin/portfolio — создать новый кейс (по умолчанию скрыт). */
+/**
+ * POST /api/admin/portfolio — создать новый кейс (по умолчанию скрыт).
+ * Принимает multipart/form-data с обязательным полем "files" (минимум одно
+ * фото) — загрузка фото происходит сразу при создании кейса, а не отдельным
+ * шагом после сохранения.
+ */
 export async function POST(request: NextRequest) {
   const unauthorized = await requireAdmin();
   if (unauthorized) return unauthorized;
 
-  const body = await request.json().catch(() => null);
-  const parsed = portfolioCaseSchema.safeParse(body);
+  const formData = await request.formData();
+
+  const parsed = portfolioCaseSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description"),
+    price: formData.get("price") ?? "",
+  });
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -30,15 +41,38 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const maxOrder = await prisma.portfolioCase.aggregate({ _max: { sortOrder: true } });
+  const files = formData
+    .getAll("files")
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
 
-  const created = await prisma.portfolioCase.create({
-    data: {
-      ...parsed.data,
-      price: parsed.data.price || null,
-      sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,
-    },
-  });
+  if (files.length === 0) {
+    return NextResponse.json(
+      { ok: false, message: "Добавьте хотя бы одно фото." },
+      { status: 400 }
+    );
+  }
 
-  return NextResponse.json({ ok: true, case: created });
+  try {
+    const saved = await Promise.all(files.map((file) => savePortfolioImage(file)));
+
+    const maxOrder = await prisma.portfolioCase.aggregate({ _max: { sortOrder: true } });
+
+    const created = await prisma.portfolioCase.create({
+      data: {
+        title: parsed.data.title,
+        description: parsed.data.description,
+        price: parsed.data.price || null,
+        sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,
+        images: {
+          create: saved.map((s, index) => ({ filePath: s.filePath, sortOrder: index })),
+        },
+      },
+      include: { images: true },
+    });
+
+    return NextResponse.json({ ok: true, case: created });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Не удалось создать кейс.";
+    return NextResponse.json({ ok: false, message }, { status: 400 });
+  }
 }

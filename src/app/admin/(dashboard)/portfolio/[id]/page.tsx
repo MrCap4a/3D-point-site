@@ -23,7 +23,6 @@ export default async function EditPortfolioCasePage(
           caseId={item.id}
           initial={{
             title: item.title,
-            category: item.category,
             description: item.description,
             price: item.price ?? "",
           }}

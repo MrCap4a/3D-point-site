@@ -36,7 +36,11 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/admin/portfo
   try {
     const updated = await prisma.portfolioCase.update({
       where: { id },
-      data: { ...parsed.data, price: parsed.data.price || null },
+      data: {
+        title: parsed.data.title,
+        description: parsed.data.description,
+        price: parsed.data.price || null,
+      },
     });
     return NextResponse.json({ ok: true, case: updated });
   } catch {

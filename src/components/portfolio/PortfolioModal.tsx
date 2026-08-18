@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import { PlaceholderImage } from "@/components/ui/PlaceholderImage";
-import { PORTFOLIO_CATEGORY_LABELS } from "@/lib/validation/portfolio";
 import type { PortfolioCaseData } from "@/lib/portfolio";
 
 type PortfolioModalProps = {
@@ -57,10 +56,7 @@ export function PortfolioModal({ item, onClose }: PortfolioModalProps) {
         <div className="p-6 sm:p-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-text-3)]">
-                {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
-              </p>
-              <h3 className="mt-1 text-xl font-semibold text-[var(--color-text)]">{item.title}</h3>
+              <h3 className="text-xl font-semibold text-[var(--color-text)]">{item.title}</h3>
               {item.price && (
                 <p className="mt-1 text-lg font-semibold text-[var(--color-accent)]">{item.price}</p>
               )}

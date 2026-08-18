@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { PORTFOLIO_CATEGORY_LABELS } from "@/lib/validation/portfolio";
 
 type ImageItem = { id: string; filePath: string };
 
@@ -11,7 +10,6 @@ type Props = {
   caseId?: string;
   initial?: {
     title: string;
-    category: string;
     description: string;
     price: string;
   };
@@ -26,28 +24,46 @@ export function PortfolioCaseForm({ caseId, initial, initialImages = [] }: Props
   const [form, setForm] = useState(
     initial ?? {
       title: "",
-      category: "RESTORATION",
       description: "",
       price: "",
     }
   );
+  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [images, setImages] = useState(initialImages);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isCreating = !caseId;
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isCreating && newFiles.length === 0) {
+      setError("Добавьте хотя бы одно фото.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
-    const url = caseId ? `/api/admin/portfolio/${caseId}` : "/api/admin/portfolio";
-    const method = caseId ? "PUT" : "POST";
+    let response: Response;
 
-    const response = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    if (isCreating) {
+      const formData = new FormData();
+      formData.set("title", form.title);
+      formData.set("description", form.description);
+      formData.set("price", form.price);
+      newFiles.forEach((file) => formData.append("files", file));
+
+      response = await fetch("/api/admin/portfolio", { method: "POST", body: formData });
+    } else {
+      response = await fetch(`/api/admin/portfolio/${caseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+    }
+
     const data = (await response.json()) as { ok: boolean; message?: string; case?: { id: string } };
 
     if (!data.ok) {
@@ -57,7 +73,7 @@ export function PortfolioCaseForm({ caseId, initial, initialImages = [] }: Props
     }
 
     setSaving(false);
-    if (!caseId && data.case) {
+    if (isCreating && data.case) {
       router.push(`/admin/portfolio/${data.case.id}`);
     } else {
       router.refresh();
@@ -98,20 +114,34 @@ export function PortfolioCaseForm({ caseId, initial, initialImages = [] }: Props
         />
       </div>
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">Категория</label>
-        <select
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className={inputClasses}
-        >
-          {Object.entries(PORTFOLIO_CATEGORY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {isCreating && (
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
+            Фото (обязательно)
+          </label>
+          <input
+            type="file"
+            multiple
+            required
+            accept="image/jpeg,image/png,image/webp"
+            className="w-full text-sm text-[var(--color-text-2)] file:mr-4 file:rounded-[var(--radius-sm)] file:border-0 file:bg-[var(--color-bg-2)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[var(--color-text)]"
+            onChange={(e) => setNewFiles(Array.from(e.target.files ?? []))}
+          />
+          {newFiles.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {newFiles.map((file, index) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={index}
+                  src={URL.createObjectURL(file)}
+                  alt=""
+                  className="h-20 w-20 rounded-[var(--radius-sm)] object-cover"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">Описание</label>
@@ -137,7 +167,7 @@ export function PortfolioCaseForm({ caseId, initial, initialImages = [] }: Props
         />
       </div>
 
-      {caseId && (
+      {!isCreating && (
         <div>
           <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
             Изображения

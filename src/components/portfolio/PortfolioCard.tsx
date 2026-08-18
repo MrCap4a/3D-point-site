@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { PlaceholderImage } from "@/components/ui/PlaceholderImage";
-import { PORTFOLIO_CATEGORY_LABELS } from "@/lib/validation/portfolio";
 import type { PortfolioCaseData } from "@/lib/portfolio";
 
 type PortfolioCardProps = {
@@ -40,10 +39,7 @@ export function PortfolioCard({ item, onOpen }: PortfolioCardProps) {
       ) : (
         <PlaceholderImage className="aspect-[4/3] w-full rounded-[var(--radius-md)] transition-opacity group-hover:opacity-90" />
       )}
-      <p className="mt-3 text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-text-3)]">
-        {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
-      </p>
-      <p className="mt-1 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
+      <p className="mt-3 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
       <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-2)]">{item.description}</p>
       {item.price && (
         <p className="mt-2 text-base font-semibold text-[var(--color-text)]">{item.price}</p>

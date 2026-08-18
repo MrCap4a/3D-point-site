@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PORTFOLIO_CATEGORY_LABELS } from "@/lib/validation/portfolio";
 
 type CaseItem = {
   id: string;
   title: string;
-  category: string;
   isPublished: boolean;
 };
 
@@ -69,9 +67,6 @@ export function PortfolioAdminList({ initialCases }: { initialCases: CaseItem[] 
             >
               {item.title}
             </Link>
-            <p className="text-xs text-[var(--color-text-3)]">
-              {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
-            </p>
           </div>
 
           <div className="flex items-center gap-2">

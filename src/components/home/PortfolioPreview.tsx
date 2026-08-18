@@ -3,7 +3,6 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { PlaceholderImage } from "@/components/ui/PlaceholderImage";
-import { PORTFOLIO_CATEGORY_LABELS } from "@/lib/validation/portfolio";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -50,10 +49,7 @@ export async function PortfolioPreview() {
               ) : (
                 <PlaceholderImage className="aspect-[4/3] w-full rounded-[var(--radius-md)]" />
               )}
-              <p className="mt-3 text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-text-3)]">
-                {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
-              </p>
-              <p className="mt-1 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
+              <p className="mt-3 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
               {item.price && (
                 <p className="mt-1 text-base font-semibold text-[var(--color-text)]">{item.price}</p>
               )}
