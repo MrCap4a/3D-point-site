@@ -12,9 +12,8 @@ type Props = {
   initial?: {
     title: string;
     category: string;
-    problemText: string;
-    solutionText: string;
-    resultText: string;
+    description: string;
+    price: string;
   };
   initialImages?: ImageItem[];
 };
@@ -28,9 +27,8 @@ export function PortfolioCaseForm({ caseId, initial, initialImages = [] }: Props
     initial ?? {
       title: "",
       category: "RESTORATION",
-      problemText: "",
-      solutionText: "",
-      resultText: "",
+      description: "",
+      price: "",
     }
   );
   const [images, setImages] = useState(initialImages);
@@ -116,36 +114,25 @@ export function PortfolioCaseForm({ caseId, initial, initialImages = [] }: Props
       </div>
 
       <div>
+        <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">Описание</label>
+        <textarea
+          required
+          rows={4}
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          className={inputClasses}
+        />
+      </div>
+
+      <div>
         <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
-          Проблема клиента
+          Цена (необязательно)
         </label>
-        <textarea
-          required
-          rows={3}
-          value={form.problemText}
-          onChange={(e) => setForm({ ...form, problemText: e.target.value })}
-          className={inputClasses}
-        />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">Решение</label>
-        <textarea
-          required
-          rows={3}
-          value={form.solutionText}
-          onChange={(e) => setForm({ ...form, solutionText: e.target.value })}
-          className={inputClasses}
-        />
-      </div>
-
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">Результат</label>
-        <textarea
-          required
-          rows={3}
-          value={form.resultText}
-          onChange={(e) => setForm({ ...form, resultText: e.target.value })}
+        <input
+          type="text"
+          placeholder="например, 2500 ₽ или от 1500 ₽"
+          value={form.price}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
           className={inputClasses}
         />
       </div>

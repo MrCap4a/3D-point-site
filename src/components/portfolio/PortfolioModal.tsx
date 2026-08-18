@@ -61,6 +61,9 @@ export function PortfolioModal({ item, onClose }: PortfolioModalProps) {
                 {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
               </p>
               <h3 className="mt-1 text-xl font-semibold text-[var(--color-text)]">{item.title}</h3>
+              {item.price && (
+                <p className="mt-1 text-lg font-semibold text-[var(--color-accent)]">{item.price}</p>
+              )}
             </div>
             <button
               type="button"
@@ -72,24 +75,11 @@ export function PortfolioModal({ item, onClose }: PortfolioModalProps) {
             </button>
           </div>
 
-          <div className="mt-6 grid gap-5">
-            <ModalField label="Проблема" text={item.problemText} />
-            <ModalField label="Решение" text={item.solutionText} />
-            <ModalField label="Результат" text={item.resultText} />
-          </div>
+          <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-[var(--color-text-2)]">
+            {item.description}
+          </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ModalField({ label, text }: { label: string; text: string }) {
-  return (
-    <div>
-      <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-text-3)]">
-        {label}
-      </p>
-      <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-text-2)]">{text}</p>
     </div>
   );
 }

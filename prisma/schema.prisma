@@ -70,14 +70,16 @@ enum PortfolioCategory {
   SERIAL
 }
 
-/// Кейс портфолио, управляемый через админку.
+/// Кейс портфолио, управляемый через админку. Оформление в духе объявлений
+/// (фото + описание + необязательная цена), а не технического отчёта.
 model PortfolioCase {
   id          String            @id @default(cuid())
   title       String
   category    PortfolioCategory
-  problemText String
-  solutionText String
-  resultText  String
+  description String
+  /// Цена — свободный текст (например "2500 ₽" или "от 1500 ₽"), не число:
+  /// администратор сам решает, как её сформулировать. Необязательное поле.
+  price       String?
   sortOrder   Int               @default(0)
   isPublished Boolean           @default(false)
   createdAt   DateTime          @default(now())

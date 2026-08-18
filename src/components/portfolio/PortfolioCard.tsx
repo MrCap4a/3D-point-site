@@ -44,6 +44,10 @@ export function PortfolioCard({ item, onOpen }: PortfolioCardProps) {
         {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
       </p>
       <p className="mt-1 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
+      <p className="mt-1 line-clamp-2 text-sm text-[var(--color-text-2)]">{item.description}</p>
+      {item.price && (
+        <p className="mt-2 text-base font-semibold text-[var(--color-text)]">{item.price}</p>
+      )}
     </button>
   );
 }

@@ -53,7 +53,10 @@ export async function PortfolioPreview() {
               <p className="mt-3 text-xs font-medium uppercase tracking-[0.08em] text-[var(--color-text-3)]">
                 {PORTFOLIO_CATEGORY_LABELS[item.category] ?? item.category}
               </p>
-              <p className="mt-1 text-sm font-medium text-[var(--color-text-2)]">{item.title}</p>
+              <p className="mt-1 text-sm font-medium text-[var(--color-text)]">{item.title}</p>
+              {item.price && (
+                <p className="mt-1 text-base font-semibold text-[var(--color-text)]">{item.price}</p>
+              )}
             </div>
           ))}
         </div>

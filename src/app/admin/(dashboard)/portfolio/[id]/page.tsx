@@ -24,9 +24,8 @@ export default async function EditPortfolioCasePage(
           initial={{
             title: item.title,
             category: item.category,
-            problemText: item.problemText,
-            solutionText: item.solutionText,
-            resultText: item.resultText,
+            description: item.description,
+            price: item.price ?? "",
           }}
           initialImages={item.images.map((img) => ({ id: img.id, filePath: img.filePath }))}
         />

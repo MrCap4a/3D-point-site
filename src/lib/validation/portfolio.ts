@@ -15,9 +15,9 @@ export const portfolioCategorySchema = z.enum([
 export const portfolioCaseSchema = z.object({
   title: z.string().trim().min(1, "Укажите название кейса").max(200),
   category: portfolioCategorySchema,
-  problemText: z.string().trim().min(1, "Опишите проблему клиента").max(2000),
-  solutionText: z.string().trim().min(1, "Опишите решение").max(2000),
-  resultText: z.string().trim().min(1, "Опишите результат").max(2000),
+  description: z.string().trim().min(1, "Добавьте описание").max(2000),
+  // Цена — свободный текст (например "2500 ₽" или "от 1500 ₽"), необязательна.
+  price: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
 export type PortfolioCaseInput = z.infer<typeof portfolioCaseSchema>;

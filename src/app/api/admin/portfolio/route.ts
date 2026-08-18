@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
   const created = await prisma.portfolioCase.create({
     data: {
       ...parsed.data,
+      price: parsed.data.price || null,
       sortOrder: (maxOrder._max.sortOrder ?? 0) + 1,
     },
   });

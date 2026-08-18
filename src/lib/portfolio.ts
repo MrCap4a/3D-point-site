@@ -2,8 +2,7 @@ export type PortfolioCaseData = {
   id: string;
   title: string;
   category: string;
-  problemText: string;
-  solutionText: string;
-  resultText: string;
+  description: string;
+  price: string | null;
   images: { id: string }[];
 };
